@@ -19,14 +19,58 @@ type Application = {
   passportPhotoPath: string | null;
   bankStatementPath: string | null;
   supportingDocPath: string | null;
+  passportUploadOriginalPath: string | null;
+  passportUploadOptimizedPath: string | null;
+  passportUploadOriginalSize: number | null;
+  passportUploadOptimizedSize: number | null;
+  passportPhotoOriginalPath: string | null;
+  passportPhotoOptimizedPath: string | null;
+  passportPhotoOriginalSize: number | null;
+  passportPhotoOptimizedSize: number | null;
+  bankStatementOriginalPath: string | null;
+  bankStatementOptimizedPath: string | null;
+  bankStatementOriginalSize: number | null;
+  bankStatementOptimizedSize: number | null;
+  supportingDocOriginalPath: string | null;
+  supportingDocOptimizedPath: string | null;
+  supportingDocOriginalSize: number | null;
+  supportingDocOptimizedSize: number | null;
   createdAt: string;
 };
 
 const documentFields = [
-  { key: "passportUploadPath", label: "Passport" },
-  { key: "passportPhotoPath", label: "Photo" },
-  { key: "bankStatementPath", label: "Bank Statement" },
-  { key: "supportingDocPath", label: "Supporting Doc" },
+  {
+    legacyKey: "passportUploadPath",
+    originalKey: "passportUploadOriginalPath",
+    optimizedKey: "passportUploadOptimizedPath",
+    originalSizeKey: "passportUploadOriginalSize",
+    optimizedSizeKey: "passportUploadOptimizedSize",
+    label: "Passport",
+  },
+  {
+    legacyKey: "passportPhotoPath",
+    originalKey: "passportPhotoOriginalPath",
+    optimizedKey: "passportPhotoOptimizedPath",
+    originalSizeKey: "passportPhotoOriginalSize",
+    optimizedSizeKey: "passportPhotoOptimizedSize",
+    label: "Photo",
+  },
+  {
+    legacyKey: "bankStatementPath",
+    originalKey: "bankStatementOriginalPath",
+    optimizedKey: "bankStatementOptimizedPath",
+    originalSizeKey: "bankStatementOriginalSize",
+    optimizedSizeKey: "bankStatementOptimizedSize",
+    label: "Bank Statement",
+  },
+  {
+    legacyKey: "supportingDocPath",
+    originalKey: "supportingDocOriginalPath",
+    optimizedKey: "supportingDocOptimizedPath",
+    originalSizeKey: "supportingDocOriginalSize",
+    optimizedSizeKey: "supportingDocOptimizedSize",
+    label: "Supporting Doc",
+  },
 ] as const;
 
 export function ApplicationAdmin({ applications }: { applications: Application[] }) {
@@ -60,25 +104,79 @@ export function ApplicationAdmin({ applications }: { applications: Application[]
     }
   }
 
+  function formatFileSize(size: number | null) {
+    if (!size) return "Size unavailable";
+
+    if (size < 1024 * 1024) {
+      return `${Math.max(1, Math.round(size / 1024))} KB`;
+    }
+
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+  }
+
   function renderDocumentLinks(application: Application) {
-    const documents = documentFields.filter((document) => application[document.key]);
+    const documents = documentFields
+      .map((document) => {
+        const originalPath = application[document.originalKey] ?? application[document.legacyKey];
+        const optimizedPath = application[document.optimizedKey] ?? application[document.legacyKey];
+
+        return {
+          ...document,
+          originalPath,
+          optimizedPath,
+          originalSize: application[document.originalSizeKey],
+          optimizedSize: application[document.optimizedSizeKey],
+        };
+      })
+      .filter((document) => document.originalPath || document.optimizedPath);
 
     if (documents.length === 0) {
       return <p className="text-sm text-slate-500">No documents uploaded</p>;
     }
 
     return (
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 grid gap-3">
         {documents.map((document) => (
-          <a
-            key={document.key}
-            href={application[document.key] ?? "#"}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#073b7a] ring-1 ring-blue-100 transition hover:bg-blue-100"
-          >
-            {document.label}
-          </a>
+          <div key={document.label} className="rounded bg-blue-50 p-3 ring-1 ring-blue-100">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#073b7a]">
+              {document.label}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {document.originalPath ? (
+                <a
+                  href={document.originalPath}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded bg-white px-3 py-1.5 text-xs font-bold text-slate-700 ring-1 ring-blue-100 transition hover:bg-blue-100"
+                >
+                  Original
+                </a>
+              ) : null}
+              {document.optimizedPath ? (
+                <a
+                  href={document.optimizedPath}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded bg-[#073b7a] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#0b4ea2]"
+                >
+                  Optimized
+                </a>
+              ) : null}
+              {document.optimizedPath ? (
+                <a
+                  href={document.optimizedPath}
+                  download
+                  className="rounded bg-[#d9a441] px-3 py-1.5 text-xs font-bold text-[#102033] transition hover:bg-[#c9942f]"
+                >
+                  Download optimized
+                </a>
+              ) : null}
+            </div>
+            <p className="mt-2 text-xs text-slate-600">
+              Original: {formatFileSize(document.originalSize)} · Optimized:{" "}
+              {formatFileSize(document.optimizedSize)}
+            </p>
+          </div>
         ))}
       </div>
     );

@@ -21,5 +21,21 @@ model Application {
   passportPhotoPath  String?
   bankStatementPath  String?
   supportingDocPath  String?
+  passportUploadOriginalPath   String?
+  passportUploadOptimizedPath  String?
+  passportUploadOriginalSize   Int?
+  passportUploadOptimizedSize  Int?
+  passportPhotoOriginalPath    String?
+  passportPhotoOptimizedPath   String?
+  passportPhotoOriginalSize    Int?
+  passportPhotoOptimizedSize   Int?
+  bankStatementOriginalPath    String?
+  bankStatementOptimizedPath   String?
+  bankStatementOriginalSize    Int?
+  bankStatementOptimizedSize   Int?
+  supportingDocOriginalPath    String?
+  supportingDocOptimizedPath   String?
+  supportingDocOriginalSize    Int?
+  supportingDocOptimizedSize   Int?
   createdAt          DateTime @default(now())
 }

@@ -18,6 +18,22 @@ async function main() {
       "passportPhotoPath" TEXT,
       "bankStatementPath" TEXT,
       "supportingDocPath" TEXT,
+      "passportUploadOriginalPath" TEXT,
+      "passportUploadOptimizedPath" TEXT,
+      "passportUploadOriginalSize" INTEGER,
+      "passportUploadOptimizedSize" INTEGER,
+      "passportPhotoOriginalPath" TEXT,
+      "passportPhotoOptimizedPath" TEXT,
+      "passportPhotoOriginalSize" INTEGER,
+      "passportPhotoOptimizedSize" INTEGER,
+      "bankStatementOriginalPath" TEXT,
+      "bankStatementOptimizedPath" TEXT,
+      "bankStatementOriginalSize" INTEGER,
+      "bankStatementOptimizedSize" INTEGER,
+      "supportingDocOriginalPath" TEXT,
+      "supportingDocOptimizedPath" TEXT,
+      "supportingDocOriginalSize" INTEGER,
+      "supportingDocOptimizedSize" INTEGER,
       "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
   `);
@@ -42,12 +58,29 @@ async function main() {
     "passportPhotoPath",
     "bankStatementPath",
     "supportingDocPath",
+    "passportUploadOriginalPath",
+    "passportUploadOptimizedPath",
+    "passportUploadOriginalSize",
+    "passportUploadOptimizedSize",
+    "passportPhotoOriginalPath",
+    "passportPhotoOptimizedPath",
+    "passportPhotoOriginalSize",
+    "passportPhotoOptimizedSize",
+    "bankStatementOriginalPath",
+    "bankStatementOptimizedPath",
+    "bankStatementOriginalSize",
+    "bankStatementOptimizedSize",
+    "supportingDocOriginalPath",
+    "supportingDocOptimizedPath",
+    "supportingDocOriginalSize",
+    "supportingDocOptimizedSize",
   ];
 
   for (const column of uploadColumns) {
     if (!columnNames.has(column)) {
+      const type = column.endsWith("Size") ? "INTEGER" : "TEXT";
       await prisma.$executeRawUnsafe(`
-        ALTER TABLE "Application" ADD COLUMN "${column}" TEXT;
+        ALTER TABLE "Application" ADD COLUMN "${column}" ${type};
       `);
     }
   }

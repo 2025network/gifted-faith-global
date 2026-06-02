@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import { mkdir, writeFile } from "fs/promises";
 import { NextResponse } from "next/server";
 import path from "path";
+import sharp from "sharp";
 import { sendApplicationEmails } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
@@ -14,32 +15,62 @@ const requiredFields = [
   "message",
 ] as const;
 
-const maxFileSize = 5 * 1024 * 1024;
-const allowedMimeTypes = new Set(["application/pdf", "image/jpeg", "image/png"]);
-const allowedExtensions = new Set([".pdf", ".jpg", ".jpeg", ".png"]);
+const maxFileSize = 15 * 1024 * 1024;
+const maxImageDimension = 1600;
+
+const allowedMimeTypes = new Set([
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+  "image/heic-sequence",
+  "image/heif-sequence",
+]);
+const allowedExtensions = new Set([".pdf", ".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"]);
+const imageExtensions = new Set([".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"]);
 
 const uploadFields = [
   {
     formName: "passportUpload",
-    dbName: "passportUploadPath",
     label: "Passport Upload",
+    legacyPathField: "passportUploadPath",
+    originalPathField: "passportUploadOriginalPath",
+    optimizedPathField: "passportUploadOptimizedPath",
+    originalSizeField: "passportUploadOriginalSize",
+    optimizedSizeField: "passportUploadOptimizedSize",
   },
   {
     formName: "passportPhoto",
-    dbName: "passportPhotoPath",
     label: "Passport Photograph",
+    legacyPathField: "passportPhotoPath",
+    originalPathField: "passportPhotoOriginalPath",
+    optimizedPathField: "passportPhotoOptimizedPath",
+    originalSizeField: "passportPhotoOriginalSize",
+    optimizedSizeField: "passportPhotoOptimizedSize",
   },
   {
     formName: "bankStatement",
-    dbName: "bankStatementPath",
     label: "Bank Statement",
+    legacyPathField: "bankStatementPath",
+    originalPathField: "bankStatementOriginalPath",
+    optimizedPathField: "bankStatementOptimizedPath",
+    originalSizeField: "bankStatementOriginalSize",
+    optimizedSizeField: "bankStatementOptimizedSize",
   },
   {
     formName: "supportingDocument",
-    dbName: "supportingDocPath",
     label: "Additional Supporting Document",
+    legacyPathField: "supportingDocPath",
+    originalPathField: "supportingDocOriginalPath",
+    optimizedPathField: "supportingDocOptimizedPath",
+    originalSizeField: "supportingDocOriginalSize",
+    optimizedSizeField: "supportingDocOptimizedSize",
   },
 ] as const;
+
+class UploadError extends Error {}
 
 function generateTrackingCode() {
   const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -69,62 +100,125 @@ function getFileExtension(file: File) {
   return path.extname(file.name).toLowerCase();
 }
 
-async function hasValidSignature(file: File) {
-  const bytes = new Uint8Array(await file.slice(0, 8).arrayBuffer());
-  const extension = getFileExtension(file);
+function getSafeFileName(trackingCode: string, fieldName: string, variant: string, extension: string) {
+  return `${trackingCode}-${fieldName}-${variant}-${randomBytes(5).toString("hex")}${extension}`;
+}
 
+function hasValidSignature(buffer: Buffer, extension: string) {
   if (extension === ".pdf") {
-    return bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46;
+    return buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46;
   }
 
   if (extension === ".jpg" || extension === ".jpeg") {
-    return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+    return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
   }
 
   if (extension === ".png") {
     return (
-      bytes[0] === 0x89 &&
-      bytes[1] === 0x50 &&
-      bytes[2] === 0x4e &&
-      bytes[3] === 0x47 &&
-      bytes[4] === 0x0d &&
-      bytes[5] === 0x0a &&
-      bytes[6] === 0x1a &&
-      bytes[7] === 0x0a
+      buffer[0] === 0x89 &&
+      buffer[1] === 0x50 &&
+      buffer[2] === 0x4e &&
+      buffer[3] === 0x47 &&
+      buffer[4] === 0x0d &&
+      buffer[5] === 0x0a &&
+      buffer[6] === 0x1a &&
+      buffer[7] === 0x0a
+    );
+  }
+
+  if (extension === ".webp") {
+    return buffer.subarray(0, 4).toString("ascii") === "RIFF" && buffer.subarray(8, 12).toString("ascii") === "WEBP";
+  }
+
+  if (extension === ".heic" || extension === ".heif") {
+    const brand = buffer.subarray(8, 12).toString("ascii");
+    return (
+      buffer.subarray(4, 8).toString("ascii") === "ftyp" &&
+      ["heic", "heix", "hevc", "hevx", "heif", "mif1", "msf1"].includes(brand)
     );
   }
 
   return false;
 }
 
-async function validateUpload(file: File, label: string) {
+function validateUpload(file: File, buffer: Buffer, label: string) {
   if (file.size > maxFileSize) {
-    return `${label} must be 5MB or smaller.`;
+    throw new UploadError(`${label} must be 15MB or smaller before optimization.`);
   }
 
   const extension = getFileExtension(file);
 
   if (!allowedMimeTypes.has(file.type) || !allowedExtensions.has(extension)) {
-    return `${label} must be a PDF, JPG, JPEG, or PNG file.`;
+    throw new UploadError(`${label} must be a PDF, JPG, JPEG, PNG, WEBP, or supported HEIC file.`);
   }
 
-  if (!(await hasValidSignature(file))) {
-    return `${label} file contents do not match a supported PDF, JPG, JPEG, or PNG file.`;
+  if (!hasValidSignature(buffer, extension)) {
+    throw new UploadError(`${label} file contents do not match a supported document or image type.`);
   }
 
-  return "";
+  return extension;
 }
 
-async function saveUpload(file: File, trackingCode: string, fieldName: string) {
-  const extension = getFileExtension(file);
-  const safeName = `${trackingCode}-${fieldName}-${randomBytes(4).toString("hex")}${extension}`;
+async function saveBuffer(buffer: Buffer, safeName: string) {
   const uploadDir = path.join(process.cwd(), "public", "uploads");
-  const filePath = path.join(uploadDir, safeName);
-
   await mkdir(uploadDir, { recursive: true });
-  await writeFile(filePath, Buffer.from(await file.arrayBuffer()));
+  await writeFile(path.join(uploadDir, safeName), buffer);
 
   return `/uploads/${safeName}`;
+}
+
+async function optimizeImage(buffer: Buffer, label: string) {
+  try {
+    return await sharp(buffer, { failOn: "error" })
+      .rotate()
+      .resize({
+        width: maxImageDimension,
+        height: maxImageDimension,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .jpeg({ quality: 78, mozjpeg: true })
+      .toBuffer();
+  } catch {
+    throw new UploadError(
+      `${label} could not be optimized safely. Please upload PDF, JPG, JPEG, PNG, WEBP, or a supported HEIC image.`
+    );
+  }
+}
+
+async function processUpload(
+  file: File,
+  trackingCode: string,
+  uploadField: (typeof uploadFields)[number]
+) {
+  const originalBuffer = Buffer.from(await file.arrayBuffer());
+  const extension = validateUpload(file, originalBuffer, uploadField.label);
+  const originalName = getSafeFileName(trackingCode, uploadField.formName, "original", extension);
+  const originalPath = await saveBuffer(originalBuffer, originalName);
+
+  if (extension === ".pdf") {
+    return {
+      originalPath,
+      optimizedPath: originalPath,
+      originalSize: originalBuffer.length,
+      optimizedSize: originalBuffer.length,
+    };
+  }
+
+  if (!imageExtensions.has(extension)) {
+    throw new UploadError(`${uploadField.label} is not a supported optimizable image.`);
+  }
+
+  const optimizedBuffer = await optimizeImage(originalBuffer, uploadField.label);
+  const optimizedName = getSafeFileName(trackingCode, uploadField.formName, "optimized", ".jpg");
+  const optimizedPath = await saveBuffer(optimizedBuffer, optimizedName);
+
+  return {
+    originalPath,
+    optimizedPath,
+    originalSize: originalBuffer.length,
+    optimizedSize: optimizedBuffer.length,
+  };
 }
 
 async function parseApplicationRequest(request: Request) {
@@ -161,12 +255,15 @@ export async function POST(request: Request) {
     }
 
     const trackingCode = await generateUniqueTrackingCode();
-    const uploadPaths: Record<string, string | null> = {
-      passportUploadPath: null,
-      passportPhotoPath: null,
-      bankStatementPath: null,
-      supportingDocPath: null,
-    };
+    const uploadData: Record<string, string | number | null> = {};
+
+    for (const uploadField of uploadFields) {
+      uploadData[uploadField.legacyPathField] = null;
+      uploadData[uploadField.originalPathField] = null;
+      uploadData[uploadField.optimizedPathField] = null;
+      uploadData[uploadField.originalSizeField] = null;
+      uploadData[uploadField.optimizedSizeField] = null;
+    }
 
     if (formData) {
       for (const uploadField of uploadFields) {
@@ -176,17 +273,12 @@ export async function POST(request: Request) {
           continue;
         }
 
-        const validationError = await validateUpload(file, uploadField.label);
-
-        if (validationError) {
-          return NextResponse.json({ error: validationError }, { status: 400 });
-        }
-
-        uploadPaths[uploadField.dbName] = await saveUpload(
-          file,
-          trackingCode,
-          uploadField.formName
-        );
+        const processed = await processUpload(file, trackingCode, uploadField);
+        uploadData[uploadField.legacyPathField] = processed.optimizedPath;
+        uploadData[uploadField.originalPathField] = processed.originalPath;
+        uploadData[uploadField.optimizedPathField] = processed.optimizedPath;
+        uploadData[uploadField.originalSizeField] = processed.originalSize;
+        uploadData[uploadField.optimizedSizeField] = processed.optimizedSize;
       }
     }
 
@@ -199,10 +291,7 @@ export async function POST(request: Request) {
         travelPurpose: fields.travelPurpose.trim(),
         message: fields.message.trim(),
         trackingCode,
-        passportUploadPath: uploadPaths.passportUploadPath,
-        passportPhotoPath: uploadPaths.passportPhotoPath,
-        bankStatementPath: uploadPaths.bankStatementPath,
-        supportingDocPath: uploadPaths.supportingDocPath,
+        ...uploadData,
       },
     });
 
@@ -218,7 +307,12 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ application }, { status: 201 });
-  } catch {
+  } catch (error) {
+    if (error instanceof UploadError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    console.error("Application submission failed:", error);
     return NextResponse.json(
       { error: "Something went wrong while saving your application." },
       { status: 500 }

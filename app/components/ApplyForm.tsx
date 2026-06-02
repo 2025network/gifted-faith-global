@@ -6,8 +6,8 @@ const inputClass =
   "w-full rounded border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#0b4ea2] focus:ring-4 focus:ring-blue-100";
 const fileClass =
   "w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm file:mr-3 file:rounded file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-bold file:text-[#073b7a] focus:border-[#0b4ea2] focus:ring-4 focus:ring-blue-100";
-const maxFileSize = 5 * 1024 * 1024;
-const allowedExtensions = [".pdf", ".jpg", ".jpeg", ".png"];
+const maxFileSize = 15 * 1024 * 1024;
+const allowedExtensions = [".pdf", ".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"];
 const fileFields = [
   { name: "passportUpload", label: "Passport Upload" },
   { name: "passportPhoto", label: "Passport Photograph" },
@@ -32,11 +32,11 @@ export function ApplyForm() {
       const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
 
       if (!allowedExtensions.includes(extension)) {
-        return `${field.label} must be PDF, JPG, JPEG, or PNG.`;
+        return `${field.label} must be PDF, JPG, JPEG, PNG, WEBP, or supported HEIC.`;
       }
 
       if (file.size > maxFileSize) {
-        return `${field.label} must be 5MB or smaller.`;
+        return `${field.label} must be 15MB or smaller before optimization.`;
       }
     }
 
@@ -163,7 +163,10 @@ export function ApplyForm() {
           Document uploads
         </h2>
         <p className="mt-1 text-sm leading-6 text-slate-600">
-          Optional PDF, JPG, JPEG, or PNG files. Maximum 5MB per file.
+          Upload your document or photo. We will automatically optimize it for review.
+        </p>
+        <p className="mt-1 text-xs font-semibold text-slate-500">
+          PDF, JPG, JPEG, PNG, WEBP, and safely supported HEIC files. Maximum 15MB per file.
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           {fileFields.map((field) => (
@@ -173,7 +176,7 @@ export function ApplyForm() {
                 className={fileClass}
                 name={field.name}
                 type="file"
-                accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif"
               />
             </label>
           ))}
