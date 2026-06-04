@@ -4,102 +4,40 @@ const prisma = new PrismaClient();
 
 async function main() {
   await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "Application" (
-      "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-      "fullName" TEXT NOT NULL,
-      "phone" TEXT NOT NULL,
-      "email" TEXT NOT NULL,
-      "destinationCountry" TEXT NOT NULL,
-      "travelPurpose" TEXT NOT NULL,
-      "message" TEXT NOT NULL,
-      "status" TEXT NOT NULL DEFAULT 'Pending',
-      "trackingCode" TEXT NOT NULL,
-      "passportUploadPath" TEXT,
-      "passportPhotoPath" TEXT,
-      "bankStatementPath" TEXT,
-      "supportingDocPath" TEXT,
-      "passportUploadOriginalPath" TEXT,
-      "passportUploadOptimizedPath" TEXT,
-      "passportUploadOriginalSize" INTEGER,
-      "passportUploadOptimizedSize" INTEGER,
-      "passportPhotoOriginalPath" TEXT,
-      "passportPhotoOptimizedPath" TEXT,
-      "passportPhotoOriginalSize" INTEGER,
-      "passportPhotoOptimizedSize" INTEGER,
-      "bankStatementOriginalPath" TEXT,
-      "bankStatementOptimizedPath" TEXT,
-      "bankStatementOriginalSize" INTEGER,
-      "bankStatementOptimizedSize" INTEGER,
-      "supportingDocOriginalPath" TEXT,
-      "supportingDocOptimizedPath" TEXT,
-      "supportingDocOriginalSize" INTEGER,
-      "supportingDocOptimizedSize" INTEGER,
-      "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-  const columns = await prisma.$queryRawUnsafe(`PRAGMA table_info("Application");`);
-  const columnNames = new Set(columns.map((column) => column.name));
-
-  if (!columnNames.has("status")) {
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "Application" ADD COLUMN "status" TEXT NOT NULL DEFAULT 'Pending';
-    `);
-  }
-
-  if (!columnNames.has("trackingCode")) {
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "Application" ADD COLUMN "trackingCode" TEXT;
-    `);
-  }
-
-  const uploadColumns = [
-    "passportUploadPath",
-    "passportPhotoPath",
-    "bankStatementPath",
-    "supportingDocPath",
-    "passportUploadOriginalPath",
-    "passportUploadOptimizedPath",
-    "passportUploadOriginalSize",
-    "passportUploadOptimizedSize",
-    "passportPhotoOriginalPath",
-    "passportPhotoOptimizedPath",
-    "passportPhotoOriginalSize",
-    "passportPhotoOptimizedSize",
-    "bankStatementOriginalPath",
-    "bankStatementOptimizedPath",
-    "bankStatementOriginalSize",
-    "bankStatementOptimizedSize",
-    "supportingDocOriginalPath",
-    "supportingDocOptimizedPath",
-    "supportingDocOriginalSize",
-    "supportingDocOptimizedSize",
-  ];
-
-  for (const column of uploadColumns) {
-    if (!columnNames.has(column)) {
-      const type = column.endsWith("Size") ? "INTEGER" : "TEXT";
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "Application" ADD COLUMN "${column}" ${type};
-      `);
-    }
-  }
-
-  const rowsWithoutTracking = await prisma.$queryRawUnsafe(`
-    SELECT "id" FROM "Application" WHERE "trackingCode" IS NULL OR "trackingCode" = '';
-  `);
-
-  for (const row of rowsWithoutTracking) {
-    await prisma.$executeRawUnsafe(
-      `UPDATE "Application" SET "trackingCode" = ? WHERE "id" = ?;`,
-      `GFG-2026-${String(row.id).padStart(5, "0")}`,
-      row.id
-    );
-  }
-
-  await prisma.$executeRawUnsafe(`
-    CREATE UNIQUE INDEX IF NOT EXISTS "Application_trackingCode_key"
-    ON "Application"("trackingCode");
+    CREATE TABLE IF NOT EXISTS \`Application\` (
+      \`id\` INTEGER NOT NULL AUTO_INCREMENT,
+      \`fullName\` VARCHAR(191) NOT NULL,
+      \`phone\` VARCHAR(191) NOT NULL,
+      \`email\` VARCHAR(191) NOT NULL,
+      \`destinationCountry\` VARCHAR(191) NOT NULL,
+      \`travelPurpose\` VARCHAR(191) NOT NULL,
+      \`message\` TEXT NOT NULL,
+      \`status\` VARCHAR(191) NOT NULL DEFAULT 'Pending',
+      \`trackingCode\` VARCHAR(191) NOT NULL,
+      \`passportUploadPath\` VARCHAR(191) NULL,
+      \`passportPhotoPath\` VARCHAR(191) NULL,
+      \`bankStatementPath\` VARCHAR(191) NULL,
+      \`supportingDocPath\` VARCHAR(191) NULL,
+      \`passportUploadOriginalPath\` VARCHAR(191) NULL,
+      \`passportUploadOptimizedPath\` VARCHAR(191) NULL,
+      \`passportUploadOriginalSize\` INTEGER NULL,
+      \`passportUploadOptimizedSize\` INTEGER NULL,
+      \`passportPhotoOriginalPath\` VARCHAR(191) NULL,
+      \`passportPhotoOptimizedPath\` VARCHAR(191) NULL,
+      \`passportPhotoOriginalSize\` INTEGER NULL,
+      \`passportPhotoOptimizedSize\` INTEGER NULL,
+      \`bankStatementOriginalPath\` VARCHAR(191) NULL,
+      \`bankStatementOptimizedPath\` VARCHAR(191) NULL,
+      \`bankStatementOriginalSize\` INTEGER NULL,
+      \`bankStatementOptimizedSize\` INTEGER NULL,
+      \`supportingDocOriginalPath\` VARCHAR(191) NULL,
+      \`supportingDocOptimizedPath\` VARCHAR(191) NULL,
+      \`supportingDocOriginalSize\` INTEGER NULL,
+      \`supportingDocOptimizedSize\` INTEGER NULL,
+      \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+      UNIQUE INDEX \`Application_trackingCode_key\`(\`trackingCode\`),
+      PRIMARY KEY (\`id\`)
+    ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
   `);
 }
 

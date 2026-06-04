@@ -160,11 +160,15 @@ function validateUpload(file: File, buffer: Buffer, label: string) {
 }
 
 async function saveBuffer(buffer: Buffer, safeName: string) {
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
+  const uploadDir = process.env.UPLOAD_DIR
+    ? path.resolve(process.env.UPLOAD_DIR)
+    : path.join(process.cwd(), "public", "uploads");
+  const publicPath = process.env.UPLOAD_PUBLIC_PATH || "/uploads";
+
   await mkdir(uploadDir, { recursive: true });
   await writeFile(path.join(uploadDir, safeName), buffer);
 
-  return `/uploads/${safeName}`;
+  return `${publicPath.replace(/\/$/, "")}/${safeName}`;
 }
 
 async function optimizeImage(buffer: Buffer, label: string) {
@@ -301,7 +305,7 @@ export async function POST(request: Request) {
       destinationCountry: application.destinationCountry,
       status: application.status,
       trackingCode: application.trackingCode,
-      trackingUrl: `${new URL(request.url).origin}/track-application?code=${encodeURIComponent(
+      trackingUrl: `${(process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin).replace(/\/$/, "")}/track-application?code=${encodeURIComponent(
         application.trackingCode
       )}`,
     });

@@ -131,6 +131,6 @@ export const warrantySupport = [
 ];
 export const adminReadyNotes = [
   "Applications are saved with Prisma and SQLite.",
-  "Uploaded documents are stored in public/uploads.",
+  "Uploaded documents are stored through the configured UPLOAD_DIR and served from UPLOAD_PUBLIC_PATH.",
   "Tracking, email notification hooks, and admin status updates are enabled.",
 ];
