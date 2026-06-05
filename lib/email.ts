@@ -6,7 +6,7 @@ type ApplicationEmailPayload = {
   destinationCountry: string;
   status: string;
   trackingCode: string;
-  trackingUrl: string;
+  trackingUrl?: string;
 };
 
 type StatusEmailPayload = {
@@ -14,8 +14,10 @@ type StatusEmailPayload = {
   email: string;
   status: string;
   trackingCode: string;
-  trackingUrl: string;
+  trackingUrl?: string;
 };
+
+const defaultSiteUrl = "https://giftedfaithglobal.com";
 
 function getSmtpConfig() {
   const host = process.env.SMTP_HOST;
@@ -68,6 +70,12 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#039;");
 }
 
+function getTrackingUrl(trackingCode: string) {
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || defaultSiteUrl).replace(/\/$/, "");
+
+  return `${siteUrl}/track-application?code=${encodeURIComponent(trackingCode)}`;
+}
+
 export async function sendApplicationEmails(application: ApplicationEmailPayload) {
   const mailer = createTransporter();
 
@@ -82,8 +90,9 @@ export async function sendApplicationEmails(application: ApplicationEmailPayload
     destinationCountry: escapeHtml(application.destinationCountry),
     status: escapeHtml(application.status),
     trackingCode: escapeHtml(application.trackingCode),
-    trackingUrl: escapeHtml(application.trackingUrl),
+    trackingUrl: escapeHtml(getTrackingUrl(application.trackingCode)),
   };
+  const trackingUrl = getTrackingUrl(application.trackingCode);
 
   try {
     await mailer.transporter.sendMail({
@@ -99,7 +108,7 @@ export async function sendApplicationEmails(application: ApplicationEmailPayload
         `Tracking code: ${application.trackingCode}`,
         `Destination country: ${application.destinationCountry}`,
         `Application status: ${application.status}`,
-        `Track your application: ${application.trackingUrl}`,
+        `Track your application: ${trackingUrl}`,
         "",
         "Gifted-Faith Global Ventures",
       ].join("\n"),
@@ -141,7 +150,7 @@ export async function sendApplicationEmails(application: ApplicationEmailPayload
         `Tracking code: ${application.trackingCode}`,
         `Destination country: ${application.destinationCountry}`,
         `Application status: ${application.status}`,
-        `Tracking page: ${application.trackingUrl}`,
+        `Tracking page: ${trackingUrl}`,
       ].join("\n"),
       html: `
         <div style="font-family: Arial, sans-serif; color: #102033; line-height: 1.6;">
@@ -198,8 +207,9 @@ export async function sendStatusChangeEmail(application: StatusEmailPayload) {
     fullName: escapeHtml(application.fullName),
     status: escapeHtml(application.status),
     trackingCode: escapeHtml(application.trackingCode),
-    trackingUrl: escapeHtml(application.trackingUrl),
+    trackingUrl: escapeHtml(getTrackingUrl(application.trackingCode)),
   };
+  const trackingUrl = getTrackingUrl(application.trackingCode);
 
   try {
     await mailer.transporter.sendMail({
@@ -214,7 +224,7 @@ export async function sendStatusChangeEmail(application: StatusEmailPayload) {
         `Applicant name: ${application.fullName}`,
         `Tracking code: ${application.trackingCode}`,
         `Current status: ${application.status}`,
-        `Track your application: ${application.trackingUrl}`,
+        `Track your application: ${trackingUrl}`,
         "",
         "Gifted-Faith Global Ventures",
       ].join("\n"),

@@ -305,9 +305,6 @@ export async function POST(request: Request) {
       destinationCountry: application.destinationCountry,
       status: application.status,
       trackingCode: application.trackingCode,
-      trackingUrl: `${(process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin).replace(/\/$/, "")}/track-application?code=${encodeURIComponent(
-        application.trackingCode
-      )}`,
     });
 
     return NextResponse.json({ application }, { status: 201 });
