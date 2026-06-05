@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   Globe2,
   MessageCircle,
-  ShieldCheck,
   Star,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -192,7 +191,7 @@ export default function Home() {
                   <Star key={item} size={18} fill="currentColor" aria-hidden="true" />
                 ))}
               </div>
-              <p className="mt-4 text-sm leading-7 text-slate-700">"{testimonial.quote}"</p>
+              <p className="mt-4 text-sm leading-7 text-slate-700">&quot;{testimonial.quote}&quot;</p>
               <p className="mt-5 font-bold text-[#073b7a]">{testimonial.name}</p>
               <p className="text-sm text-slate-500">{testimonial.role}</p>
             </article>
