@@ -19,6 +19,18 @@ export function TrackApplicationForm({ initialCode = "" }: { initialCode?: strin
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState("");
 
+  function parseTrackingResponse(responseText: string) {
+    if (!responseText.trim()) {
+      return { error: "Application not found. Please check your tracking code." };
+    }
+
+    try {
+      return JSON.parse(responseText);
+    } catch {
+      return { error: "Application not found. Please check your tracking code." };
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("loading");
@@ -28,19 +40,34 @@ export function TrackApplicationForm({ initialCode = "" }: { initialCode?: strin
     const formData = new FormData(event.currentTarget);
     const code = String(formData.get("trackingCode") ?? "").trim().toUpperCase();
 
+    if (!code) {
+      setStatus("error");
+      setError("Please enter a tracking code.");
+      return;
+    }
+
     try {
       const response = await fetch(`/api/applications/track?code=${encodeURIComponent(code)}`);
-      const data = await response.json();
+      const responseText = await response.text();
+      const data = parseTrackingResponse(responseText);
 
       if (!response.ok) {
-        throw new Error(data.error ?? "Unable to find application.");
+        throw new Error(data.error ?? "Application not found. Please check your tracking code.");
+      }
+
+      if (!data.application) {
+        throw new Error("Application not found. Please check your tracking code.");
       }
 
       setApplication(data.application);
       setStatus("idle");
     } catch (trackError) {
       setStatus("error");
-      setError(trackError instanceof Error ? trackError.message : "Unable to find application.");
+      setError(
+        trackError instanceof Error
+          ? trackError.message
+          : "Application not found. Please check your tracking code."
+      );
     }
   }
 
