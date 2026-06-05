@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "hostinger:build": "npm run db:blog && next build",
+    "build": "npm run db:blog && next build",
     "start": "next start -p ${PORT:-3000}",
     "postinstall": "prisma generate",
     "lint": "eslint .",

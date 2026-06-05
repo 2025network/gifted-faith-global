@@ -1,5 +1,20 @@
 const { PrismaClient } = require("@prisma/client");
 
+const databaseUrl = process.env.DATABASE_URL || "";
+
+if (
+  !databaseUrl ||
+  databaseUrl.includes("DB_USER") ||
+  databaseUrl.includes("DB_PASSWORD") ||
+  databaseUrl.includes("DB_HOST") ||
+  databaseUrl.includes("DB_NAME")
+) {
+  console.warn(
+    "Skipping BlogPost table setup because DATABASE_URL is missing or still uses placeholder values."
+  );
+  process.exit(0);
+}
+
 const prisma = new PrismaClient();
 
 const starterPosts = [
