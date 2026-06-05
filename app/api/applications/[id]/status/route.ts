@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminLoggedIn } from "@/lib/auth";
+import { sendStatusChangeEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { isApplicationStatus } from "@/lib/status";
 
@@ -32,7 +33,17 @@ export async function PATCH(
       data: { status: body.status },
     });
 
-    return NextResponse.json({ application });
+    const notificationEmailSent = await sendStatusChangeEmail({
+      fullName: application.fullName,
+      email: application.email,
+      status: application.status,
+      trackingCode: application.trackingCode,
+      trackingUrl: `${(process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin).replace(/\/$/, "")}/track-application?code=${encodeURIComponent(
+        application.trackingCode
+      )}`,
+    });
+
+    return NextResponse.json({ application, notificationEmailSent });
   } catch {
     return NextResponse.json(
       { error: "Application status could not be updated." },

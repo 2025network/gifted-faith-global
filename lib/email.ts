@@ -9,6 +9,14 @@ type ApplicationEmailPayload = {
   trackingUrl: string;
 };
 
+type StatusEmailPayload = {
+  fullName: string;
+  email: string;
+  status: string;
+  trackingCode: string;
+  trackingUrl: string;
+};
+
 function getSmtpConfig() {
   const host = process.env.SMTP_HOST;
   const port = Number(process.env.SMTP_PORT);
@@ -149,5 +157,89 @@ export async function sendApplicationEmails(application: ApplicationEmailPayload
     });
   } catch (error) {
     console.warn("Admin notification email failed:", error);
+  }
+}
+
+const statusTemplates: Record<string, { subject: string; intro: string }> = {
+  Pending: {
+    subject: "Your application is pending review",
+    intro:
+      "Your application has been received and is pending review by our team.",
+  },
+  "Under Review": {
+    subject: "Your application is under review",
+    intro:
+      "Your application is now under review. We will update you when the next step is ready.",
+  },
+  Approved: {
+    subject: "Your application status is approved",
+    intro:
+      "Good news. Your application status has been updated to approved.",
+  },
+  Rejected: {
+    subject: "Your application status update",
+    intro:
+      "Your application status has been updated to rejected. Please contact us if you need clarification or next-step guidance.",
+  },
+};
+
+export async function sendStatusChangeEmail(application: StatusEmailPayload) {
+  const mailer = createTransporter();
+
+  if (!mailer) {
+    console.warn(
+      `Status notification email not sent for ${application.trackingCode}: SMTP is not configured.`
+    );
+    return false;
+  }
+
+  const template = statusTemplates[application.status] ?? statusTemplates.Pending;
+  const safeApplication = {
+    fullName: escapeHtml(application.fullName),
+    status: escapeHtml(application.status),
+    trackingCode: escapeHtml(application.trackingCode),
+    trackingUrl: escapeHtml(application.trackingUrl),
+  };
+
+  try {
+    await mailer.transporter.sendMail({
+      from: mailer.from,
+      to: application.email,
+      subject: `${template.subject} - ${application.trackingCode}`,
+      text: [
+        `Dear ${application.fullName},`,
+        "",
+        template.intro,
+        "",
+        `Applicant name: ${application.fullName}`,
+        `Tracking code: ${application.trackingCode}`,
+        `Current status: ${application.status}`,
+        `Track your application: ${application.trackingUrl}`,
+        "",
+        "Gifted-Faith Global Ventures",
+      ].join("\n"),
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #102033; line-height: 1.6;">
+          <h2 style="color: #073b7a;">Application status update</h2>
+          <p>Dear ${safeApplication.fullName},</p>
+          <p>${escapeHtml(template.intro)}</p>
+          <table style="border-collapse: collapse; width: 100%; max-width: 560px;">
+            <tr><td><strong>Applicant name</strong></td><td>${safeApplication.fullName}</td></tr>
+            <tr><td><strong>Tracking code</strong></td><td>${safeApplication.trackingCode}</td></tr>
+            <tr><td><strong>Current status</strong></td><td>${safeApplication.status}</td></tr>
+          </table>
+          <p><a href="${safeApplication.trackingUrl}" style="color: #0b4ea2; font-weight: bold;">Track your application</a></p>
+          <p>Gifted-Faith Global Ventures</p>
+        </div>
+      `,
+    });
+
+    return true;
+  } catch (error) {
+    console.warn(
+      `Status notification email failed for ${application.trackingCode}:`,
+      error
+    );
+    return false;
   }
 }

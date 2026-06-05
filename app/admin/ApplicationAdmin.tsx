@@ -78,6 +78,7 @@ export function ApplicationAdmin({ applications }: { applications: Application[]
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   async function deleteApplication(id: number) {
     const confirmed = window.confirm("Delete this application?");
@@ -85,6 +86,7 @@ export function ApplicationAdmin({ applications }: { applications: Application[]
 
     setDeletingId(id);
     setError("");
+    setSuccess("");
 
     try {
       const response = await fetch(`/api/applications/${id}`, {
@@ -193,6 +195,7 @@ export function ApplicationAdmin({ applications }: { applications: Application[]
   async function updateStatus(id: number, status: string) {
     setUpdatingId(id);
     setError("");
+    setSuccess("");
 
     try {
       const response = await fetch(`/api/applications/${id}/status`, {
@@ -208,6 +211,7 @@ export function ApplicationAdmin({ applications }: { applications: Application[]
         throw new Error(data.error ?? "Unable to update application status.");
       }
 
+      setSuccess("Status updated and notification email sent.");
       router.refresh();
     } catch (statusError) {
       setError(statusError instanceof Error ? statusError.message : "Unable to update application status.");
@@ -259,6 +263,11 @@ export function ApplicationAdmin({ applications }: { applications: Application[]
       {error ? (
         <p className="rounded bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 ring-1 ring-red-200">
           {error}
+        </p>
+      ) : null}
+      {success ? (
+        <p className="rounded bg-green-50 px-4 py-3 text-sm font-semibold text-green-800 ring-1 ring-green-200">
+          {success}
         </p>
       ) : null}
 

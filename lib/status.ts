@@ -1,11 +1,8 @@
 export const applicationStatuses = [
   "Pending",
-  "Reviewing",
-  "Documents Required",
-  "Processing",
+  "Under Review",
   "Approved",
   "Rejected",
-  "Completed",
 ] as const;
 
 export type ApplicationStatus = (typeof applicationStatuses)[number];
