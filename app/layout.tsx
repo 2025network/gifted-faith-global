@@ -30,10 +30,10 @@ export const metadata: Metadata = {
       "Visa assistance, study visa support, tourism travel planning, business travel support, reservations, and document support in Nigeria.",
     images: [
       {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Gifted-Faith Global Ventures travel and visa support",
+        url: "/logo.png",
+        width: 1254,
+        height: 1254,
+        alt: "Gifted-Faith Global Ventures logo",
       },
     ],
   },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     title: "Gifted-Faith Global Ventures",
     description:
       "Professional visa assistance, travel planning, and document support in Nigeria.",
-    images: ["/og-image.jpg"],
+    images: ["/logo.png"],
   },
   robots: {
     index: true,

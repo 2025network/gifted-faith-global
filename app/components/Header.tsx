@@ -5,16 +5,16 @@ import { brand, navItems } from "../data";
 export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-blue-100 bg-white/95 backdrop-blur">
-      <div className="section-shell flex min-h-20 items-center justify-between gap-5 py-3">
+      <div className="section-shell flex min-h-20 items-center justify-between gap-5 py-3 md:min-h-[92px]">
         <Link href="/" className="flex min-w-0 items-center gap-3">
           <Image
             src="/logo.png"
             alt="Gifted-Faith Global Ventures logo"
-            width={120}
-            height={80}
+            width={64}
+            height={64}
             priority
             unoptimized
-            className="h-11 max-h-[45px] w-auto max-w-[90px] shrink-0 object-contain sm:h-12 md:h-[60px] md:max-h-[60px] md:max-w-[120px]"
+            className="h-12 w-12 shrink-0 object-contain md:h-16 md:w-16"
           />
           <span className="min-w-0 max-w-[220px]">
             <span className="block text-base font-bold leading-tight text-[#111827] sm:text-lg">
