@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ClipboardList, FileCheck2, Megaphone, Plane, ShieldCheck } from "lucide-react";
+import { ClipboardList, FileCheck2, Megaphone, Palette, Plane, ShieldCheck } from "lucide-react";
 import { isAdminLoggedIn } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PageShell } from "../components/PageShell";
@@ -81,13 +81,22 @@ export default async function AdminPage() {
               <h2 className="text-2xl font-bold text-[#073b7a]">Recent application submissions</h2>
               <p className="mt-2 text-sm text-slate-600">Newest entries appear first.</p>
             </div>
-            <Link
-              href="/admin/marketing"
-              className="inline-flex items-center justify-center gap-2 rounded bg-[#d9a441] px-4 py-2.5 text-sm font-bold text-[#102033] transition hover:bg-[#c9942f]"
-            >
-              <Megaphone size={17} aria-hidden="true" />
-              Marketing Content
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/admin/marketing"
+                className="inline-flex items-center justify-center gap-2 rounded bg-[#d9a441] px-4 py-2.5 text-sm font-bold text-[#102033] transition hover:bg-[#c9942f]"
+              >
+                <Megaphone size={17} aria-hidden="true" />
+                Marketing Content
+              </Link>
+              <Link
+                href="/admin/marketing/studio"
+                className="inline-flex items-center justify-center gap-2 rounded bg-[#073b7a] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#0b4ea2]"
+              >
+                <Palette size={17} aria-hidden="true" />
+                Marketing Studio
+              </Link>
+            </div>
           </div>
           <div className="mt-5">
             <ApplicationAdmin
