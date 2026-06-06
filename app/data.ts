@@ -17,10 +17,10 @@ export const brand = {
   name: "Gifted-Faith Global Ventures",
   slogan: "Guided by Faith, Connected to the World.",
   tagline: "Travel, visa assistance, bookings, and document support.",
-  phone: "+234 000 000 0000",
-  whatsapp: "2340000000000",
+  phone: "08034126577",
+  whatsapp: "2348034126577",
   email: "info@giftedfaithglobal.com",
-  address: "Suite 00, Travel Plaza, Lagos, Nigeria",
+  address: "Shop 30, Napex Car Park, By American Embassy, Victoria Island, Lagos, Nigeria",
 };
 
 export const navItems = [
