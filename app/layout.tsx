@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   icons: {
-    icon: [{ url: "/logo.png", type: "image/png" }],
-    apple: [{ url: "/logo.png", type: "image/png" }],
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "64x64" }],
+    apple: [{ url: "/icon.png", type: "image/png", sizes: "64x64" }],
   },
   openGraph: {
     type: "website",
@@ -31,8 +31,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/logo.png",
-        width: 1254,
-        height: 1254,
+        width: 600,
+        height: 600,
         alt: "Gifted-Faith Global Ventures logo",
       },
     ],
