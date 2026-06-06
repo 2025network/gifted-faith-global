@@ -4,14 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run db:blog && next build",
+    "build": "npm run db:prepare && next build",
     "start": "next start -p ",
     "postinstall": "prisma generate",
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
+    "db:prepare": "npm run db:blog && npm run db:application-purpose",
     "db:blog": "node scripts/ensure-blog-table.cjs",
+    "db:application-purpose": "node scripts/ensure-application-purpose-field.cjs",
     "db:init": "node scripts/init-db.cjs"
   },
   "dependencies": {

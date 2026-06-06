@@ -10,6 +10,7 @@ async function main() {
       \`phone\` VARCHAR(191) NOT NULL,
       \`email\` VARCHAR(191) NOT NULL,
       \`destinationCountry\` VARCHAR(191) NOT NULL,
+      \`purposeOfTravel\` VARCHAR(191) NULL,
       \`travelPurpose\` VARCHAR(191) NOT NULL,
       \`message\` TEXT NOT NULL,
       \`status\` VARCHAR(191) NOT NULL DEFAULT 'Pending',
@@ -48,6 +49,16 @@ async function main() {
   if (adminNotesColumn.length === 0) {
     await prisma.$executeRawUnsafe(
       "ALTER TABLE `Application` ADD COLUMN `adminNotes` TEXT NULL;"
+    );
+  }
+
+  const purposeOfTravelColumn = await prisma.$queryRawUnsafe(
+    "SHOW COLUMNS FROM `Application` LIKE 'purposeOfTravel';"
+  );
+
+  if (purposeOfTravelColumn.length === 0) {
+    await prisma.$executeRawUnsafe(
+      "ALTER TABLE `Application` ADD COLUMN `purposeOfTravel` VARCHAR(191) NULL;"
     );
   }
 

@@ -35,6 +35,7 @@ export const navItems = [
 
 export const services = [
   { title: "UK Visa Assistance", description: "Guidance for visitor, family, study, and business travel documentation.", icon: Building2 },
+  { title: "China Visa Application", description: "Preparation and document guidance for China tourist, business, student, family, and work visa categories.", icon: MapPinned },
   { title: "Canada Visa Assistance", description: "Support with forms, appointment readiness, and organized application files.", icon: MapPinned },
   { title: "USA Visa Appointment", description: "Help with appointment booking preparation and travel-purpose documentation.", icon: CalendarCheck },
   { title: "Study Visa Support", description: "Student-focused document review, checklist planning, and application support.", icon: GraduationCap },

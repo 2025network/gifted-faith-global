@@ -20,6 +20,7 @@ const initialFormValues = {
   phone: "",
   email: "",
   destinationCountry: "",
+  purposeOfTravel: "",
   travelPurpose: "",
   message: "",
 };
@@ -180,7 +181,30 @@ export function ApplyForm() {
           />
         </label>
         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-          Travel purpose
+          Purpose of Travel
+          <select
+            className={inputClass}
+            name="purposeOfTravel"
+            value={formValues.purposeOfTravel}
+            onChange={(event) => updateField("purposeOfTravel", event.target.value)}
+            required
+          >
+            <option value="" disabled>
+              Select purpose
+            </option>
+            <option>China Visa</option>
+            <option>UK Visa</option>
+            <option>Canada Visa</option>
+            <option>USA Visa</option>
+            <option>Dubai Visa</option>
+            <option>Study Abroad</option>
+            <option>Travel Consultation</option>
+            <option>Other</option>
+          </select>
+        </label>
+      </div>
+      <label className="grid gap-2 text-sm font-semibold text-slate-700">
+        Travel purpose details
           <select
             className={inputClass}
             name="travelPurpose"
@@ -198,8 +222,7 @@ export function ApplyForm() {
             <option>Family Visit</option>
             <option>Other</option>
           </select>
-        </label>
-      </div>
+      </label>
       <label className="grid gap-2 text-sm font-semibold text-slate-700">
         Message
         <textarea

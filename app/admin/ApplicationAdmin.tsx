@@ -11,6 +11,7 @@ type Application = {
   phone: string;
   email: string;
   destinationCountry: string;
+  purposeOfTravel: string | null;
   travelPurpose: string;
   message: string;
   status: string;
@@ -386,6 +387,9 @@ export function ApplicationAdmin({ applications }: { applications: Application[]
                 </td>
                 <td className="px-4 py-4">
                   <p className="font-bold tracking-wide text-[#073b7a]">{application.trackingCode}</p>
+                  <p className="mt-1 font-semibold text-slate-700">
+                    {application.purposeOfTravel ?? "Purpose not specified"}
+                  </p>
                   <p className="mt-1 text-slate-600">{application.travelPurpose}</p>
                 </td>
                 <td className="px-4 py-4 text-slate-700">
@@ -459,6 +463,12 @@ export function ApplicationAdmin({ applications }: { applications: Application[]
               <div>
                 <dt className="font-bold text-slate-700">Destination</dt>
                 <dd className="mt-1 text-slate-600">{application.destinationCountry}</dd>
+              </div>
+              <div>
+                <dt className="font-bold text-slate-700">Purpose of Travel</dt>
+                <dd className="mt-1 text-slate-600">
+                  {application.purposeOfTravel ?? "Purpose not specified"}
+                </dd>
               </div>
               <div>
                 <dt className="font-bold text-slate-700">Travel purpose</dt>

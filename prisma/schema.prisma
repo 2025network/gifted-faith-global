@@ -13,6 +13,7 @@ model Application {
   phone              String
   email              String
   destinationCountry String
+  purposeOfTravel    String?
   travelPurpose      String
   message            String
   status             String   @default("Pending")

@@ -37,6 +37,8 @@ export default function ServicesPage() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((service) => {
             const Icon = service.icon;
+            const serviceHref =
+              service.title === "China Visa Application" ? "/services/china-visa" : "";
             return (
               <article key={service.title} className="rounded border border-blue-100 bg-white p-6 shadow-sm">
                 <span className="grid h-12 w-12 place-items-center rounded bg-blue-50 text-[#0b4ea2]">
@@ -44,6 +46,14 @@ export default function ServicesPage() {
                 </span>
                 <h2 className="mt-5 text-xl font-bold text-[#102033]">{service.title}</h2>
                 <p className="mt-3 text-sm leading-6 text-slate-600">{service.description}</p>
+                {serviceHref ? (
+                  <Link
+                    href={serviceHref}
+                    className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#0b4ea2] transition hover:text-[#073b7a]"
+                  >
+                    Learn more <ArrowRight size={16} aria-hidden="true" />
+                  </Link>
+                ) : null}
               </article>
             );
           })}

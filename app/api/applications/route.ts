@@ -11,6 +11,7 @@ const requiredFields = [
   "phone",
   "email",
   "destinationCountry",
+  "purposeOfTravel",
   "travelPurpose",
   "message",
 ] as const;
@@ -292,6 +293,7 @@ export async function POST(request: Request) {
         phone: fields.phone.trim(),
         email: fields.email.trim(),
         destinationCountry: fields.destinationCountry.trim(),
+        purposeOfTravel: fields.purposeOfTravel.trim(),
         travelPurpose: fields.travelPurpose.trim(),
         message: fields.message.trim(),
         trackingCode,

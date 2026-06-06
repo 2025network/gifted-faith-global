@@ -5,6 +5,7 @@ const routes = [
   "",
   "/about",
   "/services",
+  "/services/china-visa",
   "/apply-now",
   "/track-application",
   "/contact",
