@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminLoggedIn } from "@/lib/auth";
 import { blogFallbackImage, createSlug } from "@/lib/blog";
-import { prisma } from "@/lib/prisma";
+import { databaseUnavailableMessage, isDatabaseConfigured, prisma } from "@/lib/prisma";
 
 function cleanText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -20,6 +20,10 @@ export async function PATCH(
 
   if (!loggedIn) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json({ error: databaseUnavailableMessage }, { status: 503 });
   }
 
   const { id: idParam } = await params;
@@ -81,6 +85,10 @@ export async function DELETE(
 
   if (!loggedIn) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json({ error: databaseUnavailableMessage }, { status: 503 });
   }
 
   const { id: idParam } = await params;

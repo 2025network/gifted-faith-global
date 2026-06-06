@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import path from "path";
 import sharp from "sharp";
 import { sendApplicationEmails } from "@/lib/email";
-import { prisma } from "@/lib/prisma";
+import { databaseUnavailableMessage, isDatabaseConfigured, prisma } from "@/lib/prisma";
 
 const requiredFields = [
   "fullName",
@@ -248,6 +248,10 @@ async function parseApplicationRequest(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json({ error: databaseUnavailableMessage }, { status: 503 });
+    }
+
     const { fields, formData } = await parseApplicationRequest(request);
 
     for (const field of requiredFields) {

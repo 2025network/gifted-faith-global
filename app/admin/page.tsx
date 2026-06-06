@@ -26,11 +26,17 @@ export default async function AdminPage() {
     redirect("/admin/login");
   }
 
-  const applications = await prisma.application.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const applications = await (async () => {
+    try {
+      return await prisma.application.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    } catch {
+      return [];
+    }
+  })();
 
   const pendingCount = applications.filter((application) => application.status === "Pending").length;
   const documentsCount = applications.filter(

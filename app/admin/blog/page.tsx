@@ -24,9 +24,15 @@ export default async function AdminBlogPage() {
     redirect("/admin/login");
   }
 
-  const posts = await prisma.blogPost.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  const posts = await (async () => {
+    try {
+      return await prisma.blogPost.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+    } catch {
+      return [];
+    }
+  })();
 
   const publishedCount = posts.filter((post) => post.published).length;
 

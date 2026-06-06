@@ -14,12 +14,16 @@ type BlogPostPageProps = {
 };
 
 async function getPublishedPost(slug: string) {
-  return prisma.blogPost.findFirst({
-    where: {
-      slug,
-      published: true,
-    },
-  });
+  try {
+    return await prisma.blogPost.findFirst({
+      where: {
+        slug,
+        published: true,
+      },
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
@@ -72,14 +76,20 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
-  const relatedPosts = await prisma.blogPost.findMany({
-    where: {
-      published: true,
-      id: { not: post.id },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 3,
-  });
+  const relatedPosts = await (async () => {
+    try {
+      return await prisma.blogPost.findMany({
+        where: {
+          published: true,
+          id: { not: post.id },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 3,
+      });
+    } catch {
+      return [];
+    }
+  })();
 
   const articleJsonLd = {
     "@context": "https://schema.org",

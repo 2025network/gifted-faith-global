@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { databaseUnavailableMessage, isDatabaseConfigured, prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   try {
@@ -8,6 +8,10 @@ export async function GET(request: Request) {
 
     if (!code) {
       return NextResponse.json({ error: "Please enter a tracking code." }, { status: 400 });
+    }
+
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json({ error: databaseUnavailableMessage }, { status: 503 });
     }
 
     const application = await prisma.application.findUnique({
