@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "npm run db:blog && next build",
-    "start": "next start -p ${PORT:-3000}",
+    "start": "next start",
     "postinstall": "prisma generate",
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
