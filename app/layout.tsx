@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  icons: {
+    icon: [{ url: "/logo.png", type: "image/png" }],
+    apple: [{ url: "/logo.png", type: "image/png" }],
+  },
   openGraph: {
     type: "website",
     locale: "en_NG",
@@ -58,6 +62,8 @@ const travelAgencyJsonLd = {
   "@type": "TravelAgency",
   name: brand.name,
   url: siteUrl,
+  logo: `${siteUrl}/logo.png`,
+  image: `${siteUrl}/logo.png`,
   slogan: brand.slogan,
   description:
     "Travel agency in Nigeria offering visa assistance, UK visa support, Canada visa assistance, study visa support, tourism travel planning, business travel support, reservations, and document support.",
