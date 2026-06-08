@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { brand } from "./data";
+import { brand, socialLinks } from "./data";
 import "./globals.css";
 import { seoKeywords, siteUrl } from "@/lib/seo";
 
@@ -64,6 +64,7 @@ const travelAgencyJsonLd = {
   url: siteUrl,
   logo: `${siteUrl}/logo.png`,
   image: `${siteUrl}/logo.png`,
+  sameAs: socialLinks.map((social) => social.href),
   slogan: brand.slogan,
   description:
     "Travel agency in Nigeria offering visa assistance, UK visa support, Canada visa assistance, study visa support, tourism travel planning, business travel support, reservations, and document support.",

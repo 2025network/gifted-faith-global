@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import type { Metadata } from "next";
 import { PageShell } from "../components/PageShell";
+import { SocialLinks } from "../components/SocialLinks";
+import { WhatsAppCta } from "../components/WhatsAppCta";
 import { brand } from "../data";
 
 export const metadata: Metadata = {
@@ -63,10 +65,21 @@ export default function ContactPage() {
           <Link
             href={`https://wa.me/${brand.whatsapp}?text=${message}`}
             target="_blank"
+            rel="noopener noreferrer"
             className="mt-7 inline-flex items-center gap-2 rounded bg-[#0b4ea2] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#073b7a]"
           >
             Chat on WhatsApp <MessageCircle size={18} aria-hidden="true" />
           </Link>
+          <div className="mt-7 rounded bg-white p-5 ring-1 ring-blue-100">
+            <h3 className="text-lg font-bold text-[#073b7a]">Follow us online</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Get visa tips, travel updates, study abroad guidance, and immigration support.
+            </p>
+            <SocialLinks className="mt-4" showLabels />
+          </div>
+          <div className="mt-5">
+            <WhatsAppCta />
+          </div>
         </div>
       </section>
     </PageShell>

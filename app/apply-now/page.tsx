@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ApplyForm } from "../components/ApplyForm";
 import { PageShell } from "../components/PageShell";
+import { WhatsAppCta } from "../components/WhatsAppCta";
 
 export const metadata: Metadata = {
   title: "Apply Now",
@@ -35,6 +36,7 @@ export default function ApplyNowPage() {
                 Include your destination, travel purpose, expected travel timeline, and any
                 document or appointment support you need.
               </p>
+              <WhatsAppCta className="mt-5" />
             </div>
           </div>
           <ApplyForm />

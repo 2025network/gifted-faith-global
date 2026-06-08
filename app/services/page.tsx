@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import { PageShell } from "../components/PageShell";
+import { WhatsAppCta } from "../components/WhatsAppCta";
 import { services } from "../data";
 
 export const metadata: Metadata = {
@@ -70,6 +71,7 @@ export default function ServicesPage() {
           >
             Apply Now <ArrowRight size={18} aria-hidden="true" />
           </Link>
+          <WhatsAppCta className="mt-6 sm:ml-3" />
         </div>
       </section>
     </PageShell>

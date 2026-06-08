@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { brand, navItems } from "../data";
+import { SocialLinks } from "./SocialLinks";
 
 export function Footer() {
   return (
@@ -13,6 +14,13 @@ export function Footer() {
             Travel, visa assistance, appointment booking, itinerary planning, reservations, and
             document support for individuals, families, students, and business travelers.
           </p>
+          <div className="mt-5">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-[#d9a441]">Follow us</h3>
+            <SocialLinks
+              className="mt-3"
+              linkClassName="inline-flex h-10 w-10 items-center justify-center rounded border border-white/20 bg-white/10 text-white transition hover:border-[#d9a441] hover:bg-[#d9a441] hover:text-[#102033] focus-visible:focus-ring"
+            />
+          </div>
         </div>
         <div>
           <h3 className="text-sm font-bold uppercase tracking-wide text-[#d9a441]">Pages</h3>

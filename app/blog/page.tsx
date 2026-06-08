@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { PageShell } from "../components/PageShell";
+import { SocialLinks } from "../components/SocialLinks";
+import { WhatsAppCta } from "../components/WhatsAppCta";
 import { prisma } from "@/lib/prisma";
 import { BlogList } from "./BlogList";
 
@@ -52,6 +54,18 @@ export default async function BlogPage() {
       </section>
 
       <section className="section-shell py-12 sm:py-16">
+        <div className="mb-8 rounded bg-[#fff3d8] p-5 ring-1 ring-[#f0d89c] md:flex md:items-center md:justify-between md:gap-6">
+          <div>
+            <h2 className="text-xl font-bold text-[#073b7a]">Follow our travel updates</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              Connect with us for visa tips, document guidance, and travel planning reminders.
+            </p>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3 md:mt-0">
+            <SocialLinks />
+            <WhatsAppCta />
+          </div>
+        </div>
         {posts.length > 0 ? (
           <BlogList
             posts={posts.map((post) => ({

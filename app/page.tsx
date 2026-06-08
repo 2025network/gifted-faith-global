@@ -3,11 +3,12 @@ import {
   ArrowRight,
   CheckCircle2,
   Globe2,
-  MessageCircle,
   Star,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { PageShell } from "./components/PageShell";
+import { SocialLinks } from "./components/SocialLinks";
+import { WhatsAppCta } from "./components/WhatsAppCta";
 import {
   brand,
   faqs,
@@ -222,6 +223,25 @@ export default function Home() {
       </section>
 
       <section className="section-shell py-16">
+        <div className="grid items-center gap-8 rounded bg-white p-6 shadow-sm ring-1 ring-blue-100 md:grid-cols-[1fr_auto] md:p-10">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-wide text-[#d9a441]">Follow us</p>
+            <h2 className="mt-3 text-3xl font-bold text-[#073b7a]">
+              Connect with Gifted-Faith Global Ventures
+            </h2>
+            <p className="mt-3 max-w-2xl text-base leading-7 text-slate-700">
+              Follow us for visa tips, travel updates, study abroad guidance, and immigration
+              support.
+            </p>
+          </div>
+          <SocialLinks
+            showLabels
+            linkClassName="inline-flex items-center justify-center rounded border border-blue-100 bg-[#f4f8ff] px-4 py-3 text-sm font-bold text-[#0b4ea2] transition hover:border-[#d9a441] hover:bg-[#fff3d8] focus-visible:focus-ring"
+          />
+        </div>
+      </section>
+
+      <section className="section-shell py-16">
         <div className="grid items-center gap-8 rounded bg-[#fff3d8] p-6 ring-1 ring-[#f0d89c] md:grid-cols-[1fr_auto] md:p-10">
           <div>
             <h2 className="text-3xl font-bold text-[#073b7a]">Ready to begin?</h2>
@@ -229,13 +249,7 @@ export default function Home() {
               Submit your travel request today and keep your tracking code for updates.
             </p>
           </div>
-          <Link
-            href={`https://wa.me/${brand.whatsapp}`}
-            target="_blank"
-            className="inline-flex items-center justify-center gap-2 rounded bg-[#0b4ea2] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#073b7a]"
-          >
-            WhatsApp Us <MessageCircle size={18} aria-hidden="true" />
-          </Link>
+          <WhatsAppCta className="px-6 py-3.5" />
         </div>
       </section>
     </PageShell>

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { brand, navItems } from "../data";
+import { SocialLinks } from "./SocialLinks";
 
 export function Header() {
   return (
@@ -36,9 +37,20 @@ export function Header() {
           ))}
         </nav>
 
+        <div className="hidden items-center gap-3 xl:flex">
+          <SocialLinks
+            linkClassName="inline-flex h-9 w-9 items-center justify-center rounded border border-blue-100 bg-white text-[#0b4ea2] transition hover:border-[#d9a441] hover:bg-[#fff3d8] focus-visible:focus-ring"
+          />
+          <Link
+            href="/apply-now"
+            className="rounded bg-[#d9a441] px-4 py-2.5 text-sm font-bold text-[#102033] shadow-sm transition hover:bg-[#c9942f] focus-visible:focus-ring"
+          >
+            Start Application
+          </Link>
+        </div>
         <Link
           href="/apply-now"
-          className="hidden rounded bg-[#d9a441] px-4 py-2.5 text-sm font-bold text-[#102033] shadow-sm transition hover:bg-[#c9942f] focus-visible:focus-ring sm:inline-flex"
+          className="hidden rounded bg-[#d9a441] px-4 py-2.5 text-sm font-bold text-[#102033] shadow-sm transition hover:bg-[#c9942f] focus-visible:focus-ring sm:inline-flex xl:hidden"
         >
           Start Application
         </Link>

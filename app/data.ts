@@ -23,6 +23,14 @@ export const brand = {
   address: "Shop 30, Napex Car Park, By American Embassy, Victoria Island, Lagos, Nigeria",
 };
 
+export const socialLinks = [
+  { label: "Facebook", href: "https://facebook.com/GiftedFaithGlobal" },
+  { label: "Instagram", href: "https://instagram.com/GiftedFaithGlobal" },
+  { label: "TikTok", href: "https://tiktok.com/@GiftedFaithGlobal" },
+  { label: "YouTube", href: "https://youtube.com/@GiftedFaithGlobal" },
+  { label: "WhatsApp", href: "https://wa.me/2348034126577" },
+] as const;
+
 export const navItems = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
