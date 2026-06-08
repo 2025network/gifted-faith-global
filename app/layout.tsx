@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { brand, socialLinks } from "./data";
+import { GoogleAnalytics } from "./components/GoogleAnalytics";
 import "./globals.css";
 import { seoKeywords, siteUrl } from "@/lib/seo";
 
@@ -100,7 +100,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(travelAgencyJsonLd) }}
         />
         {children}
-        <GoogleAnalytics gaId="G-DWB66M7D0C" />
+        <GoogleAnalytics />
       </body>
     </html>
   );
