@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { databaseUnavailableMessage, isDatabaseConfigured, prisma } from "@/lib/prisma";
+import { jsonError, logProductionError } from "@/lib/runtime";
 
 export async function GET(request: Request) {
   try {
@@ -7,11 +7,11 @@ export async function GET(request: Request) {
     const code = searchParams.get("code")?.trim().toUpperCase();
 
     if (!code) {
-      return NextResponse.json({ error: "Please enter a tracking code." }, { status: 400 });
+      return jsonError("Please enter a tracking code.", 400);
     }
 
     if (!isDatabaseConfigured()) {
-      return NextResponse.json({ error: databaseUnavailableMessage }, { status: 503 });
+      return jsonError(databaseUnavailableMessage, 503);
     }
 
     const application = await prisma.application.findUnique({
@@ -29,23 +29,18 @@ export async function GET(request: Request) {
     });
 
     if (!application) {
-      return NextResponse.json(
-        { error: "Application not found. Please check your tracking code." },
-        { status: 404 }
-      );
+      return jsonError("Application not found. Please check your tracking code.", 404);
     }
 
-    return NextResponse.json({
+    return Response.json({
+      success: true,
       application: {
         ...application,
         createdAt: application.createdAt.toISOString(),
       },
     });
   } catch (error) {
-    console.error("Tracking lookup failed:", error);
-    return NextResponse.json(
-      { error: "Unable to track application right now. Please try again later." },
-      { status: 500 }
-    );
+    logProductionError("Tracking lookup failed", error);
+    return jsonError("Unable to track application right now. Please try again later.", 500);
   }
 }

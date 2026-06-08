@@ -4,6 +4,7 @@ import path from "path";
 import sharp from "sharp";
 import { sendApplicationEmails } from "@/lib/email";
 import { databaseUnavailableMessage, isDatabaseConfigured, prisma } from "@/lib/prisma";
+import { jsonError, logProductionError, withTimeout } from "@/lib/runtime";
 
 const requiredFields = [
   "fullName",
@@ -71,23 +72,6 @@ const uploadFields = [
 ] as const;
 
 class UploadError extends Error {}
-
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string) {
-  let timeout: ReturnType<typeof setTimeout> | undefined;
-
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<T>((_resolve, reject) => {
-        timeout = setTimeout(() => reject(new Error(`${label} timed out.`)), timeoutMs);
-      }),
-    ]);
-  } finally {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-  }
-}
 
 function generateTrackingCode() {
   const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -265,20 +249,14 @@ async function parseApplicationRequest(request: Request) {
 export async function POST(request: Request) {
   try {
     if (!isDatabaseConfigured()) {
-      return Response.json(
-        { success: false, error: databaseUnavailableMessage },
-        { status: 503 }
-      );
+      return jsonError(databaseUnavailableMessage, 503);
     }
 
     const { fields, formData } = await parseApplicationRequest(request);
 
     for (const field of requiredFields) {
       if (fields[field].trim().length === 0) {
-        return Response.json(
-          { success: false, error: "Please complete all required fields." },
-          { status: 400 }
-        );
+        return jsonError("Please complete all required fields.", 400);
       }
     }
 
@@ -337,22 +315,16 @@ export async function POST(request: Request) {
         "Application email notification"
       );
     } catch (emailError) {
-      console.error("Application email notification failed or timed out:", emailError);
+      logProductionError("Application email notification failed or timed out", emailError);
     }
 
     return Response.json({ success: true, application }, { status: 201 });
   } catch (error) {
     if (error instanceof UploadError) {
-      return Response.json({ success: false, error: error.message }, { status: 400 });
+      return jsonError(error.message, 400);
     }
 
-    console.error("Application submission failed:", error);
-    return Response.json(
-      {
-        success: false,
-        error: "Something went wrong while saving your application. Please try again.",
-      },
-      { status: 500 }
-    );
+    logProductionError("Application submission failed", error);
+    return jsonError("Something went wrong while saving your application. Please try again.", 500);
   }
 }

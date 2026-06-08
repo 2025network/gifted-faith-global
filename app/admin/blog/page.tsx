@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { BookOpen, FileText, PenLine } from "lucide-react";
 import { isAdminLoggedIn } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logProductionError } from "@/lib/runtime";
 import { PageShell } from "../../components/PageShell";
 import { BlogAdmin } from "./BlogAdmin";
 
@@ -18,18 +19,27 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminBlogPage() {
-  const loggedIn = await isAdminLoggedIn();
+  let loggedIn = false;
+
+  try {
+    loggedIn = await isAdminLoggedIn();
+  } catch (error) {
+    logProductionError("Admin blog auth check failed", error);
+  }
 
   if (!loggedIn) {
     redirect("/admin/login");
   }
 
+  let blogLoadError = "";
   const posts = await (async () => {
     try {
       return await prisma.blogPost.findMany({
         orderBy: { createdAt: "desc" },
       });
-    } catch {
+    } catch (error) {
+      logProductionError("Admin blog posts load failed", error);
+      blogLoadError = "Blog articles could not be loaded right now. Please refresh in a moment.";
       return [];
     }
   })();
@@ -70,6 +80,11 @@ export default async function AdminBlogPage() {
         </div>
 
         <div className="mt-10">
+          {blogLoadError ? (
+            <p className="mb-5 rounded bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 ring-1 ring-red-200">
+              {blogLoadError}
+            </p>
+          ) : null}
           <BlogAdmin
             posts={posts.map((post) => ({
               id: post.id,

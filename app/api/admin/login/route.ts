@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSessionCookie } from "@/lib/auth";
+import { logProductionError } from "@/lib/runtime";
 
 export async function POST(request: Request) {
   try {
@@ -9,26 +10,27 @@ export async function POST(request: Request) {
 
     if (!adminUsername || !adminPassword) {
       return NextResponse.json(
-        { error: "Admin credentials are not configured." },
+        { success: false, error: "Admin credentials are not configured." },
         { status: 500 }
       );
     }
 
     if (username !== adminUsername || password !== adminPassword) {
       return NextResponse.json(
-        { error: "Wrong username or password." },
+        { success: false, error: "Wrong username or password." },
         { status: 401 }
       );
     }
 
-    const response = NextResponse.json({ ok: true });
+    const response = NextResponse.json({ success: true, ok: true });
     const session = getAdminSessionCookie();
     response.cookies.set(session.name, session.value, session.options);
 
     return response;
-  } catch {
+  } catch (error) {
+    logProductionError("Admin login failed", error);
     return NextResponse.json(
-      { error: "Unable to login. Please try again." },
+      { success: false, error: "Unable to login. Please try again." },
       { status: 500 }
     );
   }

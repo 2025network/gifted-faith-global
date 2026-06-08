@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Megaphone, Sparkles } from "lucide-react";
 import { isAdminLoggedIn } from "@/lib/auth";
+import { logProductionError } from "@/lib/runtime";
 import { PageShell } from "../../components/PageShell";
 import { MarketingGenerator } from "./MarketingGenerator";
 
@@ -17,7 +18,13 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminMarketingPage() {
-  const loggedIn = await isAdminLoggedIn();
+  let loggedIn = false;
+
+  try {
+    loggedIn = await isAdminLoggedIn();
+  } catch (error) {
+    logProductionError("Admin marketing auth check failed", error);
+  }
 
   if (!loggedIn) {
     redirect("/admin/login");

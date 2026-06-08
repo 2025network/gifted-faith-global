@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { isAdminLoggedIn } from "@/lib/auth";
+import { logProductionError } from "@/lib/runtime";
 import { brand } from "../../data";
 import { LoginForm } from "./LoginForm";
 
@@ -16,7 +17,13 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminLoginPage() {
-  const loggedIn = await isAdminLoggedIn();
+  let loggedIn = false;
+
+  try {
+    loggedIn = await isAdminLoggedIn();
+  } catch (error) {
+    logProductionError("Admin login page auth check failed", error);
+  }
 
   if (loggedIn) {
     redirect("/admin");

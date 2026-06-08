@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ClipboardList, FileCheck2, Megaphone, Palette, Plane, ShieldCheck } from "lucide-react";
 import { isAdminLoggedIn } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logProductionError } from "@/lib/runtime";
 import { PageShell } from "../components/PageShell";
 import { ApplicationAdmin } from "./ApplicationAdmin";
 
@@ -20,12 +21,19 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage() {
-  const loggedIn = await isAdminLoggedIn();
+  let loggedIn = false;
+
+  try {
+    loggedIn = await isAdminLoggedIn();
+  } catch (error) {
+    logProductionError("Admin auth check failed", error);
+  }
 
   if (!loggedIn) {
     redirect("/admin/login");
   }
 
+  let adminLoadError = "";
   const applications = await (async () => {
     try {
       return await prisma.application.findMany({
@@ -33,7 +41,10 @@ export default async function AdminPage() {
           createdAt: "desc",
         },
       });
-    } catch {
+    } catch (error) {
+      logProductionError("Admin applications load failed", error);
+      adminLoadError =
+        "Application data could not be loaded right now. Please refresh in a moment.";
       return [];
     }
   })();
@@ -105,6 +116,11 @@ export default async function AdminPage() {
             </div>
           </div>
           <div className="mt-5">
+            {adminLoadError ? (
+              <p className="mb-5 rounded bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 ring-1 ring-red-200">
+                {adminLoadError}
+              </p>
+            ) : null}
             <ApplicationAdmin
               applications={applications.map((application) => ({
                 ...application,

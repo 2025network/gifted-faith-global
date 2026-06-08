@@ -5,6 +5,7 @@ import { CalendarDays, Clock } from "lucide-react";
 import { PageShell } from "../../components/PageShell";
 import { prisma } from "@/lib/prisma";
 import { formatBlogDate, getBlogUrl, getReadingTime } from "@/lib/blog";
+import { logProductionError } from "@/lib/runtime";
 import { siteUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +22,8 @@ async function getPublishedPost(slug: string) {
         published: true,
       },
     });
-  } catch {
+  } catch (error) {
+    logProductionError("Published blog post lookup failed", error);
     return null;
   }
 }
@@ -86,7 +88,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         orderBy: { createdAt: "desc" },
         take: 3,
       });
-    } catch {
+    } catch (error) {
+      logProductionError("Related blog posts lookup failed", error);
       return [];
     }
   })();

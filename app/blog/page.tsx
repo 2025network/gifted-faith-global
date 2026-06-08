@@ -3,6 +3,7 @@ import { PageShell } from "../components/PageShell";
 import { SocialLinks } from "../components/SocialLinks";
 import { WhatsAppCta } from "../components/WhatsAppCta";
 import { prisma } from "@/lib/prisma";
+import { logProductionError } from "@/lib/runtime";
 import { BlogList } from "./BlogList";
 
 export const dynamic = "force-dynamic";
@@ -27,13 +28,17 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
+  let blogLoadError = "";
   const posts = await (async () => {
     try {
       return await prisma.blogPost.findMany({
       where: { published: true },
       orderBy: { createdAt: "desc" },
       });
-    } catch {
+    } catch (error) {
+      logProductionError("Public blog posts load failed", error);
+      blogLoadError =
+        "Articles could not be loaded right now. Please check back shortly.";
       return [];
     }
   })();
@@ -80,9 +85,11 @@ export default async function BlogPage() {
           />
         ) : (
           <div className="rounded bg-white p-8 text-center shadow-sm ring-1 ring-blue-100">
-            <h2 className="text-xl font-bold text-[#073b7a]">Articles are coming soon</h2>
+            <h2 className="text-xl font-bold text-[#073b7a]">
+              {blogLoadError ? "Articles temporarily unavailable" : "Articles are coming soon"}
+            </h2>
             <p className="mt-2 text-sm text-slate-600">
-              New visa and travel resources will appear here after publishing.
+              {blogLoadError || "New visa and travel resources will appear here after publishing."}
             </p>
           </div>
         )}
