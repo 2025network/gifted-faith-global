@@ -1,6 +1,5 @@
 import { randomBytes } from "crypto";
 import { mkdir, writeFile } from "fs/promises";
-import { NextResponse } from "next/server";
 import path from "path";
 import sharp from "sharp";
 import { sendApplicationEmails } from "@/lib/email";
@@ -72,6 +71,23 @@ const uploadFields = [
 ] as const;
 
 class UploadError extends Error {}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string) {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_resolve, reject) => {
+        timeout = setTimeout(() => reject(new Error(`${label} timed out.`)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+  }
+}
 
 function generateTrackingCode() {
   const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -249,15 +265,18 @@ async function parseApplicationRequest(request: Request) {
 export async function POST(request: Request) {
   try {
     if (!isDatabaseConfigured()) {
-      return NextResponse.json({ error: databaseUnavailableMessage }, { status: 503 });
+      return Response.json(
+        { success: false, error: databaseUnavailableMessage },
+        { status: 503 }
+      );
     }
 
     const { fields, formData } = await parseApplicationRequest(request);
 
     for (const field of requiredFields) {
       if (fields[field].trim().length === 0) {
-        return NextResponse.json(
-          { error: "Please complete all required fields." },
+        return Response.json(
+          { success: false, error: "Please complete all required fields." },
           { status: 400 }
         );
       }
@@ -305,23 +324,34 @@ export async function POST(request: Request) {
       },
     });
 
-    await sendApplicationEmails({
-      fullName: application.fullName,
-      email: application.email,
-      destinationCountry: application.destinationCountry,
-      status: application.status,
-      trackingCode: application.trackingCode,
-    });
+    try {
+      await withTimeout(
+        sendApplicationEmails({
+          fullName: application.fullName,
+          email: application.email,
+          destinationCountry: application.destinationCountry,
+          status: application.status,
+          trackingCode: application.trackingCode,
+        }),
+        8000,
+        "Application email notification"
+      );
+    } catch (emailError) {
+      console.error("Application email notification failed or timed out:", emailError);
+    }
 
-    return NextResponse.json({ application }, { status: 201 });
+    return Response.json({ success: true, application }, { status: 201 });
   } catch (error) {
     if (error instanceof UploadError) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return Response.json({ success: false, error: error.message }, { status: 400 });
     }
 
     console.error("Application submission failed:", error);
-    return NextResponse.json(
-      { error: "Something went wrong while saving your application." },
+    return Response.json(
+      {
+        success: false,
+        error: "Something went wrong while saving your application. Please try again.",
+      },
       { status: 500 }
     );
   }

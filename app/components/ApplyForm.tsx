@@ -7,6 +7,7 @@ const inputClass =
 const fileClass =
   "w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm file:mr-3 file:rounded file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-bold file:text-[#073b7a] focus:border-[#0b4ea2] focus:ring-4 focus:ring-blue-100";
 const maxFileSize = 15 * 1024 * 1024;
+const requestTimeoutMs = 120000;
 const allowedExtensions = [".pdf", ".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"];
 const fileFields = [
   { name: "passportUpload", label: "Passport Upload" },
@@ -24,6 +25,30 @@ const initialFormValues = {
   travelPurpose: "",
   message: "",
 };
+
+type ApplicationResponse = {
+  success?: boolean;
+  error?: string;
+  application?: {
+    trackingCode?: string;
+  };
+};
+
+function parseApplicationResponse(responseText: string): ApplicationResponse {
+  if (!responseText.trim()) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(responseText) as ApplicationResponse;
+  } catch {
+    return {
+      success: false,
+      error:
+        "We could not read the server response. Please try again or contact us on WhatsApp.",
+    };
+  }
+}
 
 export function ApplyForm() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -67,22 +92,45 @@ export function ApplyForm() {
       const request = new XMLHttpRequest();
 
       request.open("POST", "/api/applications");
+      request.timeout = requestTimeoutMs;
       request.upload.onprogress = (event) => {
         if (event.lengthComputable) {
           setUploadProgress(Math.round((event.loaded / event.total) * 100));
         }
       };
       request.onload = () => {
-        const data = request.responseText ? JSON.parse(request.responseText) : {};
+        const data = parseApplicationResponse(request.responseText);
 
-        if (request.status >= 200 && request.status < 300) {
-          resolve(data);
+        if (
+          request.status >= 200 &&
+          request.status < 300 &&
+          data.application?.trackingCode
+        ) {
+          resolve({ application: { trackingCode: data.application.trackingCode } });
           return;
         }
 
-        reject(new Error(data.error ?? "Unable to submit application."));
+        reject(
+          new Error(
+            data.error ??
+              "Unable to submit application. Please try again or contact us on WhatsApp."
+          )
+        );
       };
-      request.onerror = () => reject(new Error("Unable to submit application."));
+      request.onerror = () =>
+        reject(
+          new Error(
+            "Network error. Please check your connection and try submitting again."
+          )
+        );
+      request.ontimeout = () =>
+        reject(
+          new Error(
+            "Submission timed out after the upload. Please try again or contact us on WhatsApp."
+          )
+        );
+      request.onabort = () =>
+        reject(new Error("Submission was cancelled. Please try again when you are ready."));
       request.send(formData);
     });
   }
@@ -114,7 +162,12 @@ export function ApplyForm() {
       setNotice("Your application has been submitted successfully. Save your tracking code.");
     } catch (error) {
       setStatus("error");
-      setNotice(error instanceof Error ? error.message : "Unable to submit application.");
+      setUploadProgress(0);
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Unable to submit application. Please try again or contact us on WhatsApp."
+      );
     }
   }
 
